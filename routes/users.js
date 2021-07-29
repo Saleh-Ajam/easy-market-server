@@ -4,10 +4,11 @@ var User = require('../models/user');
 var router = express.Router();
 var passport = require('passport');
 var authenticate = require('../authenticate');
+const cors = require('./cors');
 
 router.use(bodyParser.json());
 /* GET users listing. */
-router.get('/', authenticate.verifyUser, authenticate.verifyAdmin,function(req, res, next) {
+router.get('/', cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin,function(req, res, next) {
   
     User.find({})
     .then((users) => {
@@ -19,7 +20,7 @@ router.get('/', authenticate.verifyUser, authenticate.verifyAdmin,function(req, 
   
 });
 
-router.post('/signup', (req, res, next) => {
+router.post('/signup', cors.corsWithOptions, (req, res, next) => {
   // the mongoose plugin provide us with a method called register on the user schema and model
   User.register( new User({username: req.body.username}), req.body.password,(err, user) =>{
     if(err){
@@ -51,7 +52,7 @@ router.post('/signup', (req, res, next) => {
 });
 
 // here we expect to include the username and password in the body unlike before in the header
-router.post('/login',passport.authenticate('local'),(req,res) => {
+router.post('/login',cors.corsWithOptions, passport.authenticate('local'),(req,res) => {
   var token = authenticate.getToken({_id: req.user._id});
   res.statusCode = 200;
   res.setHeader('Content-Type', 'application/json');
