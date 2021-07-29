@@ -38,3 +38,12 @@ exports.jwtPassport = passport.use(new JwtStrategy(opts,(jwt_payload, done)=>{
 }));
 
 exports.verifyUser = passport.authenticate('jwt', {session: false}); // this means that we will never create session in this case
+exports.verifyAdmin = (req, res, next) => {
+    if(req.user.admin){
+        return next();
+    }else{
+        var err  = new Error('You are not autherized to perform this operation!');
+        err.status= 403;
+        next(err);
+    }
+}
