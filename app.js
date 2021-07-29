@@ -26,7 +26,15 @@ connect.then((db) =>{
 
 
 var app = express();
-
+app.all('*', (req,res,next) => {
+  if(req.secure){
+    return next();
+  }else{
+    // return stauts is 307 this means that the target resource resite temporarly on a different uri
+    // and the user agent must not change the request method if it performs automatically direction into that uri   
+    res.redirect(307, 'https://' + req.hostname + ':' + app.get('secPort') + req.url);
+  }
+});
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
