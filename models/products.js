@@ -5,9 +5,13 @@ const Currency = mongoose.Types.Currency;
 
 const Schema = mongoose.Schema;
 
-const dishSchema  = new Schema({
+const productSchema  = new Schema({
     name: {
         unique: true,
+        type: String,
+        required: true
+    },
+    fullname:{
         type: String,
         required: true
     },
@@ -39,6 +43,6 @@ const dishSchema  = new Schema({
     timestamps: true
 });
 
-var Dishes = mongoose.model('Dish' , dishSchema);
+var Products = mongoose.model('Product' , productSchema);
 
-module.exports = Dishes;
+module.exports = Products;

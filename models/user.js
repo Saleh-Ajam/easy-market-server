@@ -15,6 +15,10 @@ var User = new Schema({
     admin: {
         type: Boolean,
         default: false
+    }, 
+    image :{
+        type: String,
+        default : '/assets/images/defaultAvatar.png'
     }
 });
 

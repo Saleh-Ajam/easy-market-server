@@ -16,9 +16,9 @@ var commentSchema = new Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
     },
-    dish: {
+    product: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Dish'
+        ref: 'Product'
     }
 }, {
     timestamps: true

@@ -9,9 +9,9 @@ var favoriteSchema = new Schema({
         required: true,
         unique : true
     },
-    dishes : [{
+    products : [{
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Dish'
+        ref: 'Product'
     }]
 }, {
     timestamps: true

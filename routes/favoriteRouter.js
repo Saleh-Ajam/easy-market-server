@@ -11,7 +11,7 @@ favoriteRouter.route('/')
 .options(cors.corsWithOptions, (req, res) => { res.sendStatus(200); })
 .get(cors.cors,  authenticate.verifyUser, (req, res, next) => {
     Favorites.findOne({user: req.user._id})
-    .populate('dishes')
+    .populate('products')
     .populate('user')
     .then((favorites)=>{
         res.statusCode =200;
@@ -25,14 +25,14 @@ favoriteRouter.route('/')
         if(favorite != null){
             for(var i = req.body.length-1 ; i>=0 ; i--){
                 
-                const found =  favorite.dishes.find(element => element == req.body[i]._id);
+                const found =  favorite.products.find(element => element == req.body[i]._id);
                 if(!found){
-                    favorite.dishes.push(req.body[i]._id);
+                    favorite.products.push(req.body[i]._id);
                     favorite.save()
                     .then((favorite) => {
                         Favorites.findById(favorite._id)
                         .populate('user')
-                        .populate('dishes')
+                        .populate('products')
                         .then((favorite) =>{
                             res.statusCode = 200;
                             res.setHeader('Content-Type', 'application/json');
@@ -42,7 +42,7 @@ favoriteRouter.route('/')
                 }else{
                     res.statusCode = 403;
                     res.setHeader('Content-Type','text/plain')
-                    res.end('the dish: '+ req.body[i]._id +' is already exists!');
+                    res.end('the product: '+ req.body[i]._id +' is already exists!');
                 }
             }
 
@@ -50,14 +50,14 @@ favoriteRouter.route('/')
             Favorites.create({user: req.user._id})
             .then((favorite) =>{
                 for(var i = req.body.length-1 ; i>=0 ; i--){
-                    const found =  favorite.dishes.find(element => element == req.body[i]._id);
+                    const found =  favorite.products.find(element => element == req.body[i]._id);
                     if(!found){
-                        favorite.dishes.push(req.body[i]._id);
+                        favorite.products.push(req.body[i]._id);
                         favorite.save()
                         .then((favorite) => {
                             Favorites.findById(favorite._id)
                             .populate('user')
-                            .populate('dishes')
+                            .populate('products')
                             .then((favorite) =>{
                                 res.statusCode = 200;
                                 res.setHeader('Content-Type', 'application/json');
@@ -67,7 +67,7 @@ favoriteRouter.route('/')
                     }else{
                         res.statusCode = 403;
                         res.setHeader('Content-Type','text/plain')
-                        res.end('the dish: '+ req.body[i]._id +' is already exists!');
+                        res.end('the product: '+ req.body[i]._id +' is already exists!');
                     }
                 }
             });
@@ -99,7 +99,7 @@ favoriteRouter.route('/')
 });
 
 
-favoriteRouter.route('/:dishId')
+favoriteRouter.route('/:productId')
 .options(cors.corsWithOptions, (req, res) => { res.sendStatus(200); })
 .get(cors.cors, authenticate.verifyUser, (req, res, next) => {
     Favorites.findOne({user: req.user._id})
@@ -109,7 +109,7 @@ favoriteRouter.route('/:dishId')
             res.setHeader('Content-Type', 'application/json');
             return res.json({"exists": false, "favorites": favorites});
         }else{
-            if(favorites.dishes.indexOf(req.params.dishId) < 0){
+            if(favorites.products.indexOf(req.params.productId) < 0){
                 res.statusCode = 200;
                 res.setHeader('Content-Type', 'application/json');
                 return res.json({"exists": false, "favorites": favorites});
@@ -125,14 +125,14 @@ favoriteRouter.route('/:dishId')
     Favorites.findOne({user: req.user._id})
     .then((favorite) => {
         if(favorite != null){
-            const found =  favorite.dishes.find(element => element == req.params.dishId);
+            const found =  favorite.products.find(element => element == req.params.productId);
             if(!found){
-                favorite.dishes.push(req.params.dishId);
+                favorite.products.push(req.params.productId);
                 favorite.save()
                 .then((favorite) => {
                     Favorites.findById(favorite._id)
                             .populate('user')
-                            .populate('dishes')
+                            .populate('products')
                             .then((favorite) =>{
                                 res.statusCode = 200;
                                 res.setHeader('Content-Type', 'application/json');
@@ -142,17 +142,17 @@ favoriteRouter.route('/:dishId')
             }else{
                 res.statusCode = 403;
                 res.setHeader('Content-Type','text/plain')
-                res.end('the dish is already exists!');
+                res.end('the product is already exists!');
             }
         }else{ 
             Favorites.create({user: req.user._id})
             .then((favorite) =>{
-                favorite.dishes.push(req.params.dishId);
+                favorite.products.push(req.params.productId);
                 favorite.save()
                 .then((favorite) => {
                     Favorites.findById(favorite._id)
                         .populate('user')
-                        .populate('dishes')
+                        .populate('products')
                         .then((favorite) =>{
                              res.statusCode = 200;
                              res.setHeader('Content-Type', 'application/json');
@@ -168,15 +168,15 @@ favoriteRouter.route('/:dishId')
     Favorites.findOne({user: req.user._id})
     .then((favorite) => {
         if(favorite != null){
-            const found =  favorite.dishes.find(element => element == req.params.dishId);
+            const found =  favorite.products.find(element => element == req.params.productId);
             if(found){
-                const index = favorite.dishes.indexOf(req.params.dishId);
+                const index = favorite.products.indexOf(req.params.productId);
                 if (index > -1) {
-                    favorite.dishes.splice(index, 1);
+                    favorite.products.splice(index, 1);
                     favorite.save().then((favorite) => {
                         Favorites.findById(favorite._id)
                         .populate('user')
-                        .populate('dishes')
+                        .populate('products')
                         .then((favorite) =>{
                             res.statusCode = 200;
                             res.setHeader('Content-Type', 'application/json');
@@ -186,14 +186,14 @@ favoriteRouter.route('/:dishId')
                 }else{
                     res.statusCode = 404;
                     res.setHeader('Content-Type','text/plain')
-                    res.end('Dish ' + req.params._id+' is not in your favorites!');
+                    res.end('Product ' + req.params._id+' is not in your favorites!');
                 }
                
                 
             }else{
                 res.statusCode = 404;
                 res.setHeader('Content-Type','text/plain')
-                res.end('this dish is not exists !');
+                res.end('this product is not exists !');
             }
         }else{
             res.statusCode = 404;

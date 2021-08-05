@@ -2,44 +2,44 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const authenticate = require('../authenticate');
-const Dishes = require('../models/dishes');
+const Products = require('../models/products');
 const cors = require('./cors');
 
-const dishRouter = express.Router();
+const productRouter = express.Router();
 
-dishRouter.use(bodyParser.json());
+productRouter.use(bodyParser.json());
 //when ever you need to preflight your requests, the client will first send the 
 //HTTP OPTIONS request message and then obtain the reply from the server side before it 
 //actually sends the actual request.
-dishRouter.route('/')
+productRouter.route('/')
 .options(cors.corsWithOptions, (req, res) => { res.sendStatus(200); })
 .get(cors.cors, (req, res, next) => {
-    Dishes.find(req.query)
+    Products.find(req.query)
     .populate('comments.author')
-    .then((dishes) => {
+    .then((products) => {
         res.statusCode = 200;
         res.setHeader('Content-Type','application/json');
-        res.json(dishes);
+        res.json(products);
     }, (err) => next(err))
     .catch((err) => next(err));
 })
 .post(cors.corsWithOptions, authenticate.verifyUser,  authenticate.verifyAdmin, (req, res, next) => {
-    Dishes.create(req.body)
-    .then((dish) =>{
-        console.log('Dish Created ', dish);
+    Products.create(req.body)
+    .then((product) =>{
+        console.log('Product Created ', product);
         res.statusCode = 200;
         res.setHeader('Content-Type','application/json');
-        res.json(dish);
+        res.json(product);
     }, err => next(err))
     .catch(err => next(err));
 })
 .put(cors.corsWithOptions, authenticate.verifyUser,  authenticate.verifyAdmin, (req, res, next) => {
     res.statusCode = 403;
     res.setHeader('Content-Type','plain/text')
-    res.end('PUT operation not supported on /dishes');
+    res.end('PUT operation not supported on /products');
 })
 .delete(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
-    Dishes.deleteMany({})
+    Products.deleteMany({})
     .then((resp) =>{
         res.statusCode = 200;
         res.setHeader('Content-Type','application/json');
@@ -48,32 +48,32 @@ dishRouter.route('/')
 });
 
 
-dishRouter.route('/:dishId')
+productRouter.route('/:productId')
 .options(cors.corsWithOptions, (req, res) => { res.sendStatus(200); })
 .get(cors.cors, (req,res,next) => {
-    Dishes.findById(req.params.dishId)
+    Products.findById(req.params.productId)
     .populate('comments.author')
-    .then((dish) => {
+    .then((product) => {
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
-        res.json(dish);
+        res.json(product);
     }, err => next(err)).catch(err => next(err));
 })
 .post(cors.corsWithOptions, authenticate.verifyUser,  authenticate.verifyAdmin, (req, res, next) =>{
     res.statusCode = 403;
     res.setHeader('Content-Type','plain/text');
-    res.end('POST operation is not supported on /dishes/'+ req.params.dishId);
+    res.end('POST operation is not supported on /products/'+ req.params.productId);
 })
 .put(cors.corsWithOptions, authenticate.verifyUser,  authenticate.verifyAdmin, (req, res, next) => {
-    Dishes.findByIdAndUpdate(req.params.dishId,{$set:req.body}, {new:true})
-    .then((dish) => {
+    Products.findByIdAndUpdate(req.params.productId,{$set:req.body}, {new:true})
+    .then((product) => {
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
-        res.json(dish)
+        res.json(product)
     }, err => next(err)).catch(err => next(err));
 })
 .delete(cors.corsWithOptions, authenticate.verifyUser,  authenticate.verifyAdmin, (req, res , next) => {
-    Dishes.findByIdAndRemove(req.params.dishId)
+    Products.findByIdAndRemove(req.params.productId)
     .then((resp) =>{
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
@@ -83,18 +83,18 @@ dishRouter.route('/:dishId')
 
 
 
-dishRouter.route('/:dishId/comments')
+productRouter.route('/:productId/comments')
 .options(cors.corsWithOptions, (req, res) => { res.sendStatus(200); })
 .get(cors.cors, (req, res, next) => {
-    Dishes.findById(req.params.dishId)
+    Products.findById(req.params.productId)
     .populate('comments.author')
-    .then((dish) => {
-        if(dish != null){
+    .then((product) => {
+        if(product != null){
             res.statusCode = 200;
             res.setHeader('Content-Type','application/json');
-            res.json(dish.comments);
+            res.json(product.comments);
         }else{
-            err = new Error('Dish '+ req.params.dishId + ' not found');
+            err = new Error('Product '+ req.params.productId + ' not found');
             err.statusCode = 404;
             return next(err);
         }
@@ -102,23 +102,23 @@ dishRouter.route('/:dishId/comments')
     .catch((err) => next(err));
 })
 .post(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
-    Dishes.findById(req.params.dishId)
-    .then((dish) =>{
-        if(dish != null){
+    Products.findById(req.params.productId)
+    .then((product) =>{
+        if(product != null){
             req.body.author = req.user._id;
-            dish.comments.push(req.body);
-            dish.save()
-            .then((dish) =>{
-                Dishes.findById(dish._id)
+            product.comments.push(req.body);
+            product.save()
+            .then((product) =>{
+                Products.findById(product._id)
                     .populate('comments.author')
-                    .then((dish) => {
+                    .then((product) => {
                         res.statusCode = 200;
                         res.setHeader('Content-Type','application/json');
-                        res.json(dish);
+                        res.json(product);
                     })
             }, (err) => next(err));
         }else{
-            err = new Error('Dish '+ req.params.dishId + ' not found');
+            err = new Error('Product '+ req.params.productId + ' not found');
             err.statusCode = 404;
             return next(err);
         }
@@ -129,23 +129,23 @@ dishRouter.route('/:dishId/comments')
 .put(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
     res.statusCode = 403;
     res.setHeader('Content-Type','plain/text')
-    res.end('PUT operation not supported on /dishes/' + req.params.dishId+ '/comments');
+    res.end('PUT operation not supported on /products/' + req.params.productId+ '/comments');
 })
 .delete(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
-    Dishes.findById(req.params.dishId)
-    .then((dish) =>{
-        if(dish != null){
-            for(var i = dish.comments.length-1; i>=0; i--){
-                dish.comments.id(dish.comments[i]._id).remove();
+    Products.findById(req.params.productId)
+    .then((product) =>{
+        if(product != null){
+            for(var i = product.comments.length-1; i>=0; i--){
+                product.comments.id(product.comments[i]._id).remove();
             }
-            dish.save()
-            .then((dish) =>{
+            product.save()
+            .then((product) =>{
                 res.statusCode = 200;
                 res.setHeader('Content-Type','application/json');
-                res.json(dish);
+                res.json(product);
             }, (err) => next(err));
         }else{
-            err = new Error('Dish '+ req.params.dishId + ' not found');
+            err = new Error('Product '+ req.params.productId + ' not found');
             err.statusCode = 404;
             return next(err);
         }
@@ -153,18 +153,18 @@ dishRouter.route('/:dishId/comments')
 });
 
 
-dishRouter.route('/:dishId/comments/:commentId')
+productRouter.route('/:productId/comments/:commentId')
 .options(cors.corsWithOptions, (req, res) => { res.sendStatus(200); })
 .get(cors.cors, (req,res,next) => {
-    Dishes.findById(req.params.dishId)
+    Products.findById(req.params.productId)
     .populate('comments.author')
-    .then((dish) => {
-        if(dish != null && dish.comments.id(req.params.commentId) != null){
+    .then((product) => {
+        if(product != null && product.comments.id(req.params.commentId) != null){
             res.statusCode = 200;
             res.setHeader('Content-Type','application/json');
-            res.json(dish.comments.id(req.params.commentId));
-        }else if(dish == null){
-            err = new Error('Dish '+ req.params.dishId + ' not found');
+            res.json(product.comments.id(req.params.commentId));
+        }else if(product == null){
+            err = new Error('Product '+ req.params.productId + ' not found');
             err.statusCode = 404;
             return next(err);
         }else {
@@ -177,37 +177,37 @@ dishRouter.route('/:dishId/comments/:commentId')
 .post(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) =>{
     res.statusCode = 403;
     res.setHeader('Content-Type','plain/text');
-    res.end('POST operation is not supported on /dishes/'+ req.params.dishId + '/comments/' + req.params.commentsId);
+    res.end('POST operation is not supported on /products/'+ req.params.productId + '/comments/' + req.params.commentsId);
 })
 .put(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
-    Dishes.findById(req.params.dishId)
-    .then((dish) => {
-        // console.log(typeof dish.comments.id(req.params.commentId).author._id.toString());
+    Products.findById(req.params.productId)
+    .then((product) => {
+        // console.log(typeof product.comments.id(req.params.commentId).author._id.toString());
         // console.log(typeof req.user._id.toString());
         // console.log(typeof req.user._id);
         
         // check if the logged user is the same user that post the comment : author
-        if(req.user._id.equals(dish.comments.id(req.params.commentId).author._id)){
-            if(dish != null && dish.comments.id(req.params.commentId) != null){
+        if(req.user._id.equals(product.comments.id(req.params.commentId).author._id)){
+            if(product != null && product.comments.id(req.params.commentId) != null){
                 if(req.body.rating){
-                    dish.comments.id(req.params.commentId).rating = req.body.rating;
+                    product.comments.id(req.params.commentId).rating = req.body.rating;
                 }
                 if(req.body.comment){
-                    dish.comments.id(req.params.commentId).comment = req.body.comment;
+                    product.comments.id(req.params.commentId).comment = req.body.comment;
                 }
-                dish.save()
-                .then((dish) =>{
-                    console.log(dish);
-                    Dishes.findById(dish._id)
+                product.save()
+                .then((product) =>{
+                    console.log(product);
+                    Products.findById(product._id)
                     .populate('comments.author')
-                    .then((dish) =>{
+                    .then((product) =>{
                         res.statusCode = 200;
                         res.setHeader('Content-Type','application/json');
-                        res.json(dish);
+                        res.json(product);
                     });
                 }, (err) => next(err));
-            }else if(dish == null){
-                err = new Error('Dish '+ req.params.dishId + ' not found');
+            }else if(product == null){
+                err = new Error('Product '+ req.params.productId + ' not found');
                 err.statusCode = 404;
                 return next(err);
             }else {
@@ -224,24 +224,24 @@ dishRouter.route('/:dishId/comments/:commentId')
     }, err => next(err)).catch(err => next(err));
 })
 .delete(cors.corsWithOptions, authenticate.verifyUser, (req, res , next) => {
-    Dishes.findById(req.params.dishId)
-    .then((dish) =>{
+    Products.findById(req.params.productId)
+    .then((product) =>{
         // check if the logged user is the same user that post the comment : author
-        if(req.user._id.equals(dish.comments.id(req.params.commentId).author._id)){   
-            if(dish != null && dish.comments.id(req.params.commentId) != null){
-                dish.comments.id(req.params.commentId).remove();
-                dish.save()
-                .then((dish) =>{
-                    Dishes.findById(dish.id)
+        if(req.user._id.equals(product.comments.id(req.params.commentId).author._id)){   
+            if(product != null && product.comments.id(req.params.commentId) != null){
+                product.comments.id(req.params.commentId).remove();
+                product.save()
+                .then((product) =>{
+                    Products.findById(product.id)
                     .populate('comments.author')
-                    .then((dish) =>{
+                    .then((product) =>{
                         res.statusCode = 200;
                         res.setHeader('Content-Type','application/json');
-                        res.json(dish);
+                        res.json(product);
                     });
                 }, (err) => next(err));
-            }else if(dish == null){
-                err = new Error('Dish '+ req.params.dishId + ' not found');
+            }else if(product == null){
+                err = new Error('Product '+ req.params.productId + ' not found');
                 err.statusCode = 404;
                 return next(err);
             }else {
@@ -257,4 +257,4 @@ dishRouter.route('/:dishId/comments/:commentId')
     }, err => next(err)).catch(err => next(err));
 });
 
-module.exports = dishRouter;
+module.exports = productRouter;
