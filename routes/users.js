@@ -21,6 +21,22 @@ router.get('/', cors.corsWithOptions, authenticate.verifyUser, authenticate.veri
   
 });
 
+router.get('/usersnames', cors.corsWithOptions, function(req, res, next) {
+  
+    User.find({})
+    .then((users) => {
+      usersnamesList = [];
+      for(var i = 0; i < users.length; i++) {
+        usersnamesList.push(users[i].username);
+      }
+      res.statusCode = 200;
+      res.setHeader('Content-Type', 'application/json');
+      res.json(usersnamesList);
+    }, err => next(err)).catch(err => next(err));
+    
+  
+});
+
 router.post('/signup', cors.corsWithOptions, (req, res, next) => {
   // the mongoose plugin provide us with a method called register on the user schema and model
   User.register( new User({username: req.body.username ,lastname:req.body.lastname ,firstname: req.body.firstname}), req.body.password,(err, user) =>{
