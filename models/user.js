@@ -18,7 +18,7 @@ var User = new Schema({
     }, 
     image :{
         type: String,
-        default : '/assets/images/defaultAvatar.png'
+        default : 'assets/images/defaultAvatar.png'
     }
 });
 
