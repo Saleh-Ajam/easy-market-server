@@ -6,11 +6,11 @@ const cors = require('./cors');
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, 'public/images');
+        cb(null, 'public/assets/images/upload/usersImages');
     },
 
     filename: (req, file, cb) => {
-        cb(null, file.originalname)
+        cb(null,Date.now() + req.user._id + file.originalname );
     }
 });
 
@@ -34,10 +34,10 @@ uploadRouter.route('/')
     res.setHeader('Content-Type','plain/text');
     res.end('GET operation not supported on /imageUpload');
 })
-.post(cors.corsWithOptions, authenticate.verifyUser,  authenticate.verifyAdmin,upload.single('imageFile'), (req, res) =>{
+.post(cors.corsWithOptions, authenticate.verifyUser, upload.single('imageFile'), (req, res) =>{
     res.statusCode = 200;
     res.setHeader('Content-Type','application/json');
-    res.json(req.file);
+    res.json({...(req.file), success: true});
 })
 .put(cors.corsWithOptions, authenticate.verifyUser,  authenticate.verifyAdmin, (req, res, next) => {
     res.statusCode = 403;
