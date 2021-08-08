@@ -21,6 +21,15 @@ router.get('/', cors.corsWithOptions, authenticate.verifyUser, authenticate.veri
   
 });
 
+router.put('/:userId', cors.corsWithOptions, authenticate.verifyUser,  (req, res, next) =>{
+  User.findByIdAndUpdate(req.params.userId, {$set :req.body}, {new: true})
+ .then((user)=>{
+     res.statusCode = 200;
+     res.setHeader('Content-Type', 'application/json');
+     res.json(user);
+ }, err => next(err)).catch(err => next(err));
+});
+
 router.get('/usersnames', cors.corsWithOptions, function(req, res, next) {
   
     User.find({})
