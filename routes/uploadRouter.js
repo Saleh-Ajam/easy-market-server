@@ -3,10 +3,13 @@ const bodyParser = require('body-parser');
 const authenticate = require('../authenticate');
 const multer = require('multer');
 const cors = require('./cors');
+const fs = require('fs');
+const path = require('path');
 
+const uploadPath = 'public/assets/images/upload/usersImages';
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, 'public/assets/images/upload/usersImages');
+        cb(null, uploadPath);
     },
 
     filename: (req, file, cb) => {
@@ -34,7 +37,18 @@ uploadRouter.route('/')
     res.setHeader('Content-Type','plain/text');
     res.end('GET operation not supported on /imageUpload');
 })
-.post(cors.corsWithOptions, authenticate.verifyUser, upload.single('imageFile'), (req, res) =>{
+.post(cors.corsWithOptions, authenticate.verifyUser, (req,res,next) => {
+    res.oldImage = req.user.image; 
+    return next();
+},upload.single('imageFile'), (req, res) =>{
+    if(res.oldImage !== 'assets/images/defaultAvatar.png'){
+        try {
+            fs.unlinkSync(path.resolve('./public/'+res.oldImage));
+        } catch (error) {
+            console.log(error);
+        }
+    }
+        
     res.statusCode = 200;
     res.setHeader('Content-Type','application/json');
     res.json({...(req.file), success: true});
